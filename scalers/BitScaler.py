@@ -1,6 +1,5 @@
 import numpy as np
 
-
 class BitScaler:
     """
     A class for scaling numerical data using bit scaling. Like min-max but dividing with the smallest power of 2 that covers the range.
@@ -23,13 +22,13 @@ class BitScaler:
     def auto_range(self, df, columns=None):
         """
         Calculates the range of values for the specified columns in the given DataFrame.
-        Parameters:
-        - df: pandas.DataFrame
-            The DataFrame containing the data.
-        - columns: list, optional
-            The list of column names to calculate the range for. If not provided, the range will be calculated for all columns in the DataFrame.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame containing the data.
+            columns (list, optional): The list of column names to calculate the range for. If not provided, the range will be calculated for all columns in the DataFrame.
+
         Returns:
-        None
+            None
         """
 
         columns = df.columns if columns is None else columns
@@ -38,14 +37,13 @@ class BitScaler:
     def fit(self, range_dict=None, target=(-1, 1)):
         """
         Fits the scaler to the given range dictionary and target values.
-        Parameters:
-        - range_dict (dict|None): A dictionary containing the range values for each key.
-            Can be None if the range is to be automatically calculated with auto_range.
-        - target (tuple): A tuple containing the new low and high values for scaling.
+
+        Args:
+            range_dict (dict|None, optional): A dictionary containing the range values for each key. Can be None if the range is to be automatically calculated with auto_range. Defaults to None.
+            target (tuple, optional): A tuple containing the new low and high values for scaling. Defaults to (-1, 1).
+
         Raises:
-        - ValueError: If the scaler is already fitted.
-        Returns:
-        - None
+            ValueError: If the scaler is already fitted.
         """
 
         self.range_dict = range_dict
@@ -77,14 +75,15 @@ class BitScaler:
     def apply(self, df):
         """
         Applies the scaling functions to the specified columns of the given DataFrame.
-        Parameters:
-        - df: pandas.DataFrame
-            The DataFrame to apply the scaling functions to.
+
+        Args:
+            df (pandas.DataFrame): The DataFrame to apply the scaling functions to.
+
         Returns:
-        - pandas.DataFrame
-            The DataFrame with the scaled columns.
+            pandas.DataFrame: The DataFrame with the scaled columns.
+
         Raises:
-        - ValueError: If the scaler has not been fitted.
+            ValueError: If the scaler has not been fitted.
         """
         if not self.fitted:
             raise ValueError("Scaler not fitted")
@@ -95,12 +94,15 @@ class BitScaler:
     def save(self, filename):
         """
         Save the scaler to a file.
-        Parameters:
-        - filename (str): The name of the file to save the scaler to.
+
+        Args:
+            filename (str): The name of the file to save the scaler to.
+
         Raises:
-        - ValueError: If the scaler is not fitted.
+            ValueError: If the scaler is not fitted.
+
         Returns:
-        - None
+            None
         """
         if not self.fitted:
             raise ValueError("Scaler not fitted")
@@ -109,10 +111,12 @@ class BitScaler:
     def load(self, filename):
         """
         Load the scaler parameters from a file and fit the scaler.
-        Parameters:
-        - filename (str): The path to the file containing the scaler parameters.
+
+        Args:
+            filename (str): The path to the file containing the scaler parameters.
+
         Returns:
-        None
+            None
         """
         self.range_dict = np.load(filename, allow_pickle=True).item()
         target = self.range_dict.pop("target")
