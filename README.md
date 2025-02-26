@@ -1,2 +1,2 @@
-# XGBits
-Just a set of utils to study xgb models on quantized data (and to quantize the model)
+# BitHub
+Set of data preprocessing utils to emulate fixed precision arithmetic 
