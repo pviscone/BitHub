@@ -10,6 +10,10 @@ dependencies = [
     "numpy",
 ]
 
+[tool.setuptools.packages.find]
+where = ["."]
+include = ["*"]
+
 [tool.ruff]
 # Exclude a variety of commonly ignored directories.
 exclude = [
