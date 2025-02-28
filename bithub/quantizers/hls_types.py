@@ -10,7 +10,7 @@ from typing import Union, List, Tuple
 
 
 hls_include_path = os.path.join(
-    os.path.dirname(__file__), "../include/XilinxHeaders/include"
+    os.path.dirname(__file__), "../../include/XilinxHeaders/include"
 )
 ROOT.gInterpreter.AddIncludePath(hls_include_path)
 ROOT.gInterpreter.Declare("#include <ap_fixed.h>")
