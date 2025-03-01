@@ -4,10 +4,22 @@ import os
 import numpy as np
 import pandas as pd
 import ROOT
+import array
 
 from numbers import Number
-from typing import Union, List, Tuple
 
+
+ROOT.gInterpreter.Declare("""
+template <typename T>
+ROOT::VecOps::RVec<T> to_rvec(float *x, const int size_v) {
+    ROOT::VecOps::RVec<T> v(size_v);
+    for (int i = 0; i < size_v; i++) {
+        T val = x[i];
+        v[i] = val;
+    }
+    return v;
+}
+""")
 
 hls_include_path = os.path.join(
     os.path.dirname(__file__), "../include/XilinxHeaders/include"
@@ -35,12 +47,20 @@ def AP_UINT(nbits, int_bits):
 def _partial(typ, *args):
     def wrapper(x):
         if isinstance(x, pd.DataFrame):
-            x={col: x[col].values for col in x.columns}
+            x={col: x[col].values.tolist() for col in x.columns}
+        if isinstance(x, np.ndarray):
+            x=x.tolist()
+        if isinstance(x, tuple):
+            x=list(x)
 
         if isinstance(x, dict):
-            res = {k: ROOT.RVec[typ[*args]](v) for k, v in x.items()}
-        elif isinstance(x, Union[np.ndarray, List, Tuple]):
-            res = ROOT.RVec[typ[*args]](x)
+            res = {}
+            for k, v in x.items():
+                arr=array.array("f",v)
+                res[k]=ROOT.to_rvec[typ[*args]](arr, len(v))
+        elif isinstance(x, list):
+            arr=array.array("f",x)
+            res=ROOT.to_rvec[typ[*args]](arr, len(x))
         elif isinstance(x, Number):
             res = typ[*args](x)
         else:
@@ -81,4 +101,10 @@ def convert(x, typ):
     if hash(cpp_func) not in _hashed_func:
         ROOT.gInterpreter.Declare(cpp_func)
         _hashed_func.add(hash(cpp_func))
-    return np.asarray(getattr(ROOT, f"to_{typ}")(x))
+
+    if isinstance(x, Number):
+        return getattr(ROOT, f"to_{typ}")(x)
+    elif isinstance(x, dict):
+        return {k: np.asarray(getattr(ROOT, f"to_{typ}")(v)) for k, v in x.items()}
+    else:
+        return np.asarray(getattr(ROOT, f"to_{typ}")(x))
