@@ -8,6 +8,7 @@ version = "0.1.0"
 description = "Set of data preprocessing utils to emulate fixed precision arithmetic "
 dependencies = [
     "numpy",
+    "pandas",
 ]
 
 [tool.ruff]
