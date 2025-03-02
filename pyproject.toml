@@ -16,7 +16,7 @@ description = "Set of data preprocessing utils to emulate fixed precision arithm
 dependencies = [
     "numpy",
     "pandas",
-    "fpxmath",
+    "fxpmath",
     "pytest",
 ]
 
