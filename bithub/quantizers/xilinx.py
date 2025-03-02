@@ -36,7 +36,7 @@ def AP_FIXED(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
 def AP_UFIXED(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
-    return ROOT.ap_fixed[nbits, int_bits, quant_mode, overflow_mode, N]
+    return ROOT.ap_ufixed[nbits, int_bits, quant_mode, overflow_mode, N]
 
 def AP_INT(nbits, int_bits):
     return ROOT.ap_int[nbits, int_bits]
@@ -76,13 +76,13 @@ def ap_fixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
 def ap_ufixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
-    return _partial(ROOT.ap_fixed, nbits, int_bits, quant_mode, overflow_mode, N=0)
+    return _partial(ROOT.ap_ufixed, nbits, int_bits, quant_mode, overflow_mode, N)
 
-def ap_int(nbits, int_bits):
-    return _partial(ROOT.ap_int, nbits, int_bits)
+def ap_int(nbits):
+    return _partial(ROOT.ap_int, nbits)
 
-def ap_uint(nbits, int_bits):
-    return _partial(ROOT.ap_uint, nbits, int_bits)
+def ap_uint(nbits):
+    return _partial(ROOT.ap_uint, nbits)
 
 _hashed_func=set({})
 def convert(x, typ):
@@ -102,9 +102,9 @@ def convert(x, typ):
         ROOT.gInterpreter.Declare(cpp_func)
         _hashed_func.add(hash(cpp_func))
 
-    if isinstance(x, Number):
-        return getattr(ROOT, f"to_{typ}")(x)
-    elif isinstance(x, dict):
-        return {k: np.asarray(getattr(ROOT, f"to_{typ}")(v)) for k, v in x.items()}
+    if isinstance(x, dict):
+        return pd.DataFrame({k: np.asarray(getattr(ROOT, f"to_{typ}")(v)) for k, v in x.items()})
     else:
         return np.asarray(getattr(ROOT, f"to_{typ}")(x))
+
+# %%
