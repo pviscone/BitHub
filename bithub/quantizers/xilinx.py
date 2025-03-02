@@ -21,19 +21,23 @@ ROOT::VecOps::RVec<T> to_rvec(float *x, const int size_v) {
 }
 """)
 
-hls_include_path = os.path.join(
-    os.path.dirname(__file__), "../include/XilinxHeaders/include"
+include_path = os.path.join(
+    os.path.dirname(__file__), "../include"
 )
+hls_include_path = os.path.join(
+    include_path, "../include/XilinxHeaders/simulation_headers/include"
+)
+ROOT.gInterpreter.AddIncludePath(include_path)
 ROOT.gInterpreter.AddIncludePath(hls_include_path)
 ROOT.gInterpreter.Declare("#include <ap_fixed.h>")
 ROOT.gInterpreter.Declare("#include <ap_int.h>")
 
-def AP_FIXED(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
+def AP_FIXED(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
     return ROOT.ap_fixed[nbits, int_bits, quant_mode, overflow_mode, N]
 
-def AP_UFIXED(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
+def AP_UFIXED(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
     return ROOT.ap_ufixed[nbits, int_bits, quant_mode, overflow_mode, N]
@@ -68,12 +72,12 @@ def _partial(typ, *args):
         return res
     return wrapper
 
-def ap_fixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
+def ap_fixed(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
     return _partial(ROOT.ap_fixed, nbits, int_bits, quant_mode, overflow_mode, N)
 
-def ap_ufixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT", N=0):
+def ap_ufixed(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT", N=0):
     quant_mode = getattr(ROOT, q_mode)
     overflow_mode = getattr(ROOT, o_mode)
     return _partial(ROOT.ap_ufixed, nbits, int_bits, quant_mode, overflow_mode, N)

@@ -5,8 +5,13 @@ from numbers import Number
 import ROOT
 
 current_path = os.path.dirname(__file__)
-hls_include_path = os.path.join(current_path, "../include/XilinxHeaders/include")
-ROOT.gInterpreter.AddIncludePath(current_path)
+include_path = os.path.join(
+    os.path.dirname(__file__), "../include"
+)
+hls_include_path = os.path.join(
+    include_path, "../include/XilinxHeaders/simulation_headers/include"
+)
+ROOT.gInterpreter.AddIncludePath(include_path)
 ROOT.gInterpreter.AddIncludePath(hls_include_path)
 ROOT.gInterpreter.Declare('#include <inverse_lut.cpp>')
 

@@ -7,7 +7,6 @@ _q_modes = {
     "AP_RND_ZERO": "around",
     "AP_TRN": "floor",
     "AP_TRN_ZERO": "trunc",
-    #"AP_TRN_INF": "ceil",
 }
 
 _o_modes = {
@@ -49,7 +48,7 @@ def _partial(typ, *args, **kwargs):
     return wrapper
 
 
-def ap_fixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT"):
+def ap_fixed(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT"):
     quant_mode = get_q_mode(q_mode)
     overflow_mode = get_o_mode(o_mode)
     return _partial(
@@ -62,7 +61,7 @@ def ap_fixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT"):
     )
 
 
-def ap_ufixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT"):
+def ap_ufixed(nbits, int_bits, q_mode="AP_RND_ZERO", o_mode="AP_SAT"):
     quant_mode = get_q_mode(q_mode)
     overflow_mode = get_o_mode(o_mode)
     return _partial(
@@ -76,24 +75,22 @@ def ap_ufixed(nbits, int_bits, q_mode="AP_RND_CONV", o_mode="AP_SAT"):
 
 
 def ap_int(nbits):
-    overflow_mode = get_o_mode("AP_WRAP")
     return _partial(
         Fxp,
         signed=True,
         n_word=nbits,
         n_frac=0,
-        overflow=overflow_mode,
+        overflow="wrap",
     )
 
 
 def ap_uint(nbits):
-    overflow_mode = get_o_mode("AP_WRAP")
     return _partial(
         Fxp,
         signed=False,
         n_word=nbits,
         n_frac=0,
-        overflow=overflow_mode,
+        overflow="wrap",
     )
 
 
