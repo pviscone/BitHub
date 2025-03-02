@@ -108,7 +108,7 @@ ENV/
 
 .envs
 .vscode
-*test*
+*/*test*/*
 *.npy
 *.parquet
 **/prova
