@@ -23,40 +23,29 @@ class BitScaler:
         self.bit_shifts = {}
         self.df = None
 
-    def auto_range(self, df, columns=None):
+    def fit(self, df, columns=None, range_dict=None, target=(-1, 1)):
         """
-        Calculates the range of values for the specified columns in the given DataFrame.
+        Calculates the range of values for the specified columns in the given DataFrame and fits the scaler to the given range dictionary and target values.
 
         Args:
             df (pandas.DataFrame): The DataFrame containing the data.
             columns (list, optional): The list of column names to calculate the range for. If not provided, the range will be calculated for all columns in the DataFrame.
-
+            range_dict (dict|None, optional): A dictionary containing the range values for each key. Can be None if the range is to be automatically calculated with auto_range. Defaults to None.
+            target (tuple, optional): A tuple containing the new low and high values for scaling. Defaults to (-1, 1).
+        Raises:
+            ValueError: If the scaler is already fitted.
         Returns:
             None
         """
-
-        columns = df.columns if columns is None else columns
-        self.range_dict = {key: (df[key].min(), df[key].max()) for key in columns}
-
-    def fit(self, range_dict=None, target=(-1, 1)):
-        """
-        Fits the scaler to the given range dictionary and target values.
-
-        Args:
-            range_dict (dict|None, optional): A dictionary containing the range values for each key. Can be None if the range is to be automatically calculated with auto_range. Defaults to None.
-            target (tuple, optional): A tuple containing the new low and high values for scaling. Defaults to (-1, 1).
-
-        Raises:
-            ValueError: If the scaler is already fitted.
-        """
-        if range_dict is not None:
-            self.range_dict = range_dict
-        assert (
-            self.range_dict is not None
-        ), "range_dict must be provided or calculated with auto_range"
-
         if self.fitted:
             raise ValueError("Scaler already fitted")
+
+        columns = df.columns if columns is None else columns
+
+        if range_dict is not None:
+            self.range_dict = range_dict
+        else:
+            self.range_dict = {key: (df[key].min(), df[key].max()) for key in columns}
 
         inf, sup = target
 
