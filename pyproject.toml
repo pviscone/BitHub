@@ -10,7 +10,7 @@ include = ["bithub*"]
 exclude = ["test*"]
 
 [tool.setuptools.package-data]
-mypkg = ["*.h"]
+"*" = ["*.h"]
 
 [project]
 name = "bithub"
