@@ -18,6 +18,8 @@ dependencies = [
     "pandas",
     "fxpmath",
     "pytest",
+    "fastparquet",
+    "ruff"
 ]
 
 [tool.ruff]
@@ -65,7 +67,7 @@ target-version = "py311"
 select = ["E4", "E7", "E9", "F", "B"]
 
 # 2. Avoid enforcing line-length violations (`E501`)
-ignore = ["E501"]
+ignore = ["E501", "B905"]
 
 # Allow fix for all enabled rules (when `--fix`) is provided.
 fixable = ["ALL"]

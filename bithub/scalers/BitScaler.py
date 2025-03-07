@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 class BitScaler:
     """
@@ -18,6 +19,9 @@ class BitScaler:
         """
         self.fitted = False
         self.range_dict = None
+        self.scale_funcs = {}
+        self.bit_shifts = {}
+        self.df = None
 
     def auto_range(self, df, columns=None):
         """
@@ -45,8 +49,8 @@ class BitScaler:
         Raises:
             ValueError: If the scaler is already fitted.
         """
-
-        self.range_dict = range_dict
+        if range_dict is not None:
+            self.range_dict = range_dict
         assert (
             self.range_dict is not None
         ), "range_dict must be provided or calculated with auto_range"
@@ -54,25 +58,24 @@ class BitScaler:
         if self.fitted:
             raise ValueError("Scaler already fitted")
 
-        self.scale_funcs = {}
-        new_low, new_high = target
+        inf, sup = target
 
         for key in self.range_dict:
-            low, high = self.range_dict[key]
+            min_x, max_x = self.range_dict[key]
 
-            quant_range = 2 ** np.ceil(np.log2(high - low))
+            self.bit_shifts[key] = np.ceil(np.log2((max_x - min_x)/(sup - inf)))
 
             #! God damn, python, you suck!!!
             #! Dirty workaround to avoid the lambda function to capture the last value of the loop
             self.scale_funcs[key] = eval(
-                f"lambda x: {new_low}+((x-{low})*({new_high}-{new_low})/{quant_range})"
+                f"lambda x: {inf}+((x-{min_x}))/(2**{self.bit_shifts[key]})"
             )
 
-        self.range_dict["target"] = target
         self.target = target
         self.fitted = True
+        self.df = self.get_df()
 
-    def apply(self, df):
+    def apply(self, df, copy = True):
         """
         Applies the scaling functions to the specified columns of the given DataFrame.
 
@@ -85,11 +88,31 @@ class BitScaler:
         Raises:
             ValueError: If the scaler has not been fitted.
         """
+        if copy:
+            df = df.copy()
         if not self.fitted:
             raise ValueError("Scaler not fitted")
         for key in self.scale_funcs:
             df[key] = self.scale_funcs[key](df[key])
         return df
+
+    def get_df(self):
+        if not self.fitted:
+            raise ValueError("Scaler not fitted")
+        if self.df is None:
+            df_dict = {"feature_name": [], "inf": [], "sup": [], "min": [], "max": [], "bit_shift": []}
+            for key in self.range_dict:
+                df_dict["feature_name"].append(key)
+                df_dict["inf"].append(self.target[0])
+                df_dict["sup"].append(self.target[1])
+                df_dict["min"].append(self.range_dict[key][0])
+                df_dict["max"].append(self.range_dict[key][1])
+                df_dict["bit_shift"].append(int(self.bit_shifts[key]))
+            self.df = pd.DataFrame(df_dict)
+            return self.df
+        else:
+            return self.df
+
 
     def save(self, filename):
         """
@@ -106,7 +129,9 @@ class BitScaler:
         """
         if not self.fitted:
             raise ValueError("Scaler not fitted")
-        np.save(filename, self.range_dict)
+
+        df = self.get_df()
+        df.to_parquet(filename)
 
     def load(self, filename):
         """
@@ -118,6 +143,20 @@ class BitScaler:
         Returns:
             None
         """
-        self.range_dict = np.load(filename, allow_pickle=True).item()
-        target = self.range_dict.pop("target")
-        self.fit(self.range_dict, target=target)
+        self.df = pd.read_parquet(filename)
+        self.range_dict = {feat: (min_x, max_x) for feat, min_x, max_x  in zip(self.df["feature_name"], self.df["min"], self.df["max"])}
+        self.bit_shifts = {feat: bit_shift for feat, bit_shift in zip(self.df["feature_name"], self.df["bit_shift"])}
+        self.target = (self.df["inf"][0], self.df["sup"][0])
+        for key in self.range_dict:
+            self.scale_funcs[key] = eval(
+                f"lambda x: {self.target[0]}+(x-{self.range_dict[key][0]})/(2**{self.bit_shifts[key]})"
+            )
+
+        self.fitted = True
+
+    def __str__(self):
+        print("inf + (x - min) >> bit_shift")
+        return self.get_df().__str__()
+
+    def clear(self):
+        return self.__init__()
