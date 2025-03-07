@@ -9,6 +9,9 @@ include-package-data = false
 include = ["bithub*"]
 exclude = ["test*"]
 
+[tool.setuptools.package-data]
+mypkg = ["*.h"]
+
 [project]
 name = "bithub"
 version = "0.1.0"
