@@ -1,3 +1,4 @@
+#%%
 import numpy as np
 import pandas as pd
 
@@ -22,7 +23,7 @@ class BitScaler:
         self.bit_shifts = {}
         self.df = None
 
-    def fit(self, df, columns=None, range_dict=None, target=(-1, 1), saturate = {}):
+    def fit(self, df, columns=None, range_dict=None, target=(-1, 1), saturate = {}, precision = None):
         """
         Calculates the range of values for the specified columns in the given DataFrame and fits the scaler to the given range dictionary and target values.
 
@@ -42,8 +43,14 @@ class BitScaler:
 
         columns = df.columns if columns is None else columns
 
+        if precision is not None:
+            target = (target[0]+2**-precision, target[1]-2**-precision)
+
         for key in saturate:
-            df[key] = np.clip(df[key], saturate[key][0], saturate[key][1])
+            max_sat = saturate[key][1]
+            if precision is not None:
+                max_sat = max_sat * (1- 2**-precision)
+            df[key] = np.clip(df[key], saturate[key][0], max_sat)
 
         if range_dict is not None:
             self.range_dict = range_dict
@@ -124,7 +131,7 @@ class BitScaler:
             raise ValueError("Scaler not fitted")
 
         df = self.get_df()
-        df.to_parquet(filename)
+        df.to_json(filename)
 
     def load(self, filename):
         """
@@ -136,7 +143,7 @@ class BitScaler:
         Returns:
             None
         """
-        self.df = pd.read_parquet(filename)
+        self.df = pd.read_json(filename)
         self.range_dict = {feat: (min_x, max_x) for feat, min_x, max_x  in zip(self.df["feature_name"], self.df["min"], self.df["max"])}
         self.bit_shifts = {feat: bit_shift for feat, bit_shift in zip(self.df["feature_name"], self.df["bit_shift"])}
         self.target = (self.df["inf"][0], self.df["sup"][0])
@@ -148,3 +155,4 @@ class BitScaler:
 
     def clear(self):
         return self.__init__()
+#%%
