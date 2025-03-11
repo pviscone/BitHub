@@ -44,7 +44,7 @@ class BitScaler:
         columns = df.columns if columns is None else columns
 
         if precision is not None:
-            target = (target[0]+2**-precision, target[1]-2**-precision)
+            target = (target[0], target[1]-2**-precision)
 
         for key in saturate:
             max_sat = saturate[key][1]
